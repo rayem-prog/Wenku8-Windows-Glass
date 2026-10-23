@@ -56,7 +56,7 @@ PATTERNS = {
 def inspect(root: Path, files=None, *, require_manifest=False, public_web=False) -> list[str]:
     issues = []
     manifest = root / 'tools/public-source-files.txt'
-    allowed = set(manifest.read_text().splitlines()) if manifest.is_file() else None
+    allowed = set(manifest.read_text(encoding='utf-8').splitlines()) if manifest.is_file() else None
     if require_manifest and allowed is None:
         issues.append('Source inventory is required')
     for file in sorted(root.rglob('*') if files is None else files):

@@ -32,9 +32,19 @@ jobs:
         run: ./Build-Windows.ps1
       - name: Package complete runtime and corresponding source
         run: ./tools/Package-Windows.ps1
+      - name: Native Windows shelf and reader smoke
+        run: ./tools/Validate-Windows.ps1
       - uses: actions/upload-artifact@v4
         with:
           name: Wenku8-Windows-0.5.0-release-candidate
           path: dist/*.zip
           if-no-files-found: error
+          retention-days: 14
+      - name: Upload native review captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Wenku8-Windows-native-review
+          path: build/windows-review/*
+          if-no-files-found: warn
           retention-days: 14
