@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -67,6 +68,22 @@ void main() {
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
       await Directory(output).create(recursive: true);
       await File('$output/$name.png').writeAsBytes(data!.buffer.asUint8List());
+      final view = tester.view;
+      await File('$output/windows-environment.json').writeAsString(
+        const JsonEncoder.withIndent('  ').convert({
+          'purpose': 'Native window smoke; not actual-present FPS evidence',
+          'source_revision': Platform.environment['GITHUB_SHA'] ?? 'local',
+          'os': Platform.operatingSystemVersion,
+          'dart': Platform.version,
+          'display_hz': view.display.refreshRate,
+          'device_pixel_ratio': view.devicePixelRatio,
+          'physical_width': view.physicalSize.width,
+          'physical_height': view.physicalSize.height,
+          'shader_filters_supported': ui.ImageFilter.isShaderFilterSupported,
+          'runtime_effects_ready': NativeEffects.runtimeEffectsReady,
+          'runtime_effects_failed': NativeEffects.runtimeEffectsFailed,
+        }),
+      );
       image.dispose();
     }
 

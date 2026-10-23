@@ -15,9 +15,11 @@ void main() {
           'https://www.wenku8.net/modules/article/search.php?searchkey=%C4%E3%BA%C3&page=2',
         ),
       );
-      final result = await Process.run('node', [
-        '-e',
-        '''
+      final result = await Process.run(
+        'node',
+        [
+          '-e',
+          '''
       global.window = {chrome: {webview: {postMessage: value => console.log(JSON.stringify(value))}}};
       global.fetch = async (path, options) => {
         if (path !== '/modules/article/search.php?searchkey=%C4%E3%BA%C3&page=2' || options.credentials !== 'include') throw new Error('wrong request');
@@ -29,7 +31,10 @@ void main() {
       };
       $script
     ''',
-      ]);
+        ],
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      );
       expect(result.exitCode, 0, reason: result.stderr.toString());
       final message = jsonDecode(result.stdout.toString()) as Map;
       expect(message['html'], '你好');

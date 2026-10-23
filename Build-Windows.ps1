@@ -6,6 +6,10 @@ $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
 try {
     $expected = (Get-Content -LiteralPath '.flutter-version' -Raw).Trim()
+    # A fresh SDK can print tool/bootstrap output before its first JSON reply.
+    # Complete that initialization before reading the machine-only response.
+    & $Flutter --version
+    if ($LASTEXITCODE -ne 0) { throw 'Flutter initialization failed' }
     $versionText = & $Flutter --version --machine
     if ($LASTEXITCODE -ne 0) { throw 'Could not read Flutter version' }
     $version = ($versionText -join "`n") | ConvertFrom-Json

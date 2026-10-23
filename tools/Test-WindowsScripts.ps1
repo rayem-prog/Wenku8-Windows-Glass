@@ -20,9 +20,18 @@ foreach ($file in @('Build-Windows.ps1', 'tools/Package-Windows.ps1', 'tools/Val
 $temporary = Join-Path ([IO.Path]::GetTempPath()) "wenku8-package-test-$([Guid]::NewGuid().ToString('N'))"
 New-Item -ItemType Directory -Path $temporary | Out-Null
 $previous = Get-Location
+$testsPassed = $false
 try {
     $fakeFlutter = Join-Path $temporary 'old-flutter.ps1'
-    Set-Content -LiteralPath $fakeFlutter -Value 'Write-Output ''{"frameworkVersion":"3.41.5"}''; exit 0' -Encoding UTF8
+    @'
+$marker = Join-Path $PSScriptRoot 'bootstrapped'
+if (-not (Test-Path -LiteralPath $marker)) {
+    Set-Content -LiteralPath $marker -Value 'ready'
+    Write-Output 'Resolving dependencies...'
+}
+Write-Output '{"frameworkVersion":"3.41.5"}'
+exit 0
+'@ | Set-Content -LiteralPath $fakeFlutter -Encoding UTF8
     Assert-Rejected { & (Join-Path $root 'Build-Windows.ps1') -Flutter $fakeFlutter } 'Flutter 3.47.0 is required'
     Assert-True ((Get-Location).Path -eq $previous.Path) 'Build preflight did not restore the working directory'
     $project = Join-Path $temporary 'project'
@@ -80,10 +89,12 @@ try {
     Add-Content -LiteralPath "$project/README.md" -Value 'dirty'
     Assert-Rejected { & $script -VcRuntimeDirectory $crt } 'Commit the exact tested source'
     Write-Host 'Windows scripts passed: syntax, wrong SDK, missing files, stale build, complete archive/source/licenses/checksums, overwrite and dirty-source rejection.'
+    $testsPassed = $true
 } finally {
     Set-Location $previous
     Remove-Item -LiteralPath $temporary -Recurse -Force
 }
-# GitHub's pwsh wrapper propagates LASTEXITCODE. The final git-diff failure
-# above is intentional; successful assertions must return a successful process.
+# Return success only after every assertion; expected native failures must not
+# leak LASTEXITCODE into GitHub's pwsh wrapper.
+if (-not $testsPassed) { exit 1 }
 exit 0
