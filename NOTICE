@@ -69,3 +69,8 @@ Unmodified dependency; full license: assets/licenses/enough-convert.txt.
 Exact package versions and content hashes are recorded in pubspec.lock;
 Flutter pub get retrieves their source. No additional restrictions are placed
 on these components by the Windows distribution.
+
+For this GPLv3 Larger Work, the MPL-2.0-covered enough_convert source is
+additionally made available under GPLv3 as permitted by MPL-2.0 section 3.3.
+The original MPL notices and source availability above are retained; recipients
+may also obtain and use that unmodified component under MPL-2.0.

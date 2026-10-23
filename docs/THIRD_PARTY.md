@@ -54,6 +54,6 @@ TXT / EPUB 目录解析、图片尺寸样式与同步归档使用 `archive`（MI
 
 新增的官网连接依赖 [webview_flutter_windows 1.3.0](https://pub.dev/packages/webview_flutter_windows/versions/1.3.0)，基于 Niklas Schulze 的 WebView 实现及维护者贡献，BSD-3-Clause；[完整许可与声明](../assets/licenses/webview-flutter-windows.txt)。
 
-官网字符转换依赖 [enough_convert 1.7.1](https://pub.dev/packages/enough_convert/versions/1.7.1)，MPL-2.0；[完整许可](../assets/licenses/enough-convert.txt)。本项目未修改这两个依赖的源文件；包的源码和版本可按 pubspec.lock 通过 Flutter pub get 获取。MPL/BSD 的组件保留各自许可，不被改标为本项目的 GPL 代码。
+官网字符转换依赖 [enough_convert 1.7.1](https://pub.dev/packages/enough_convert/versions/1.7.1)，MPL-2.0；[完整许可](../assets/licenses/enough-convert.txt)。本项目未修改这两个依赖的源文件；包的源码和版本可按 pubspec.lock 通过 Flutter pub get 获取。BSD 组件的原许可继续保留。enough_convert 的 MPL 原声明与来源保留；在本 GPL v3 组合分发中，依据 MPL 2.0 第 3.3 节同时按 GPL v3 提供该覆盖源码，接收者也可按 MPL 2.0 单独取得和使用未修改组件。
 
 Windows 构建依赖的 Flutter、Microsoft C++ Redistributable、WebView2 Runtime 和 SDK 继续遵循各自许可。Windows 打包只复制 Visual Studio 提供的可再分发 x64 CRT 文件；WebView2 Runtime 由使用者从 Microsoft 获取，不随仓库再发布。最终 ZIP 附带对应源码、构建信息与原许可文件。

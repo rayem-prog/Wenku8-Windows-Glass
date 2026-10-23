@@ -1,7 +1,9 @@
 import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+
 import 'app_ui.dart';
 import 'app_interactions.dart';
 import 'catalog.dart';
@@ -9,8 +11,10 @@ import 'cloud_sources.dart';
 import 'offline_cache.dart' show formatCacheBytes;
 
 typedef ImportCloudBook = Future<Novel> Function(String name, String path);
-typedef ImportCloudBatch =
-    Future<({int imported, int failed})> Function(String name, String path);
+typedef ImportCloudBatch = Future<({int imported, int failed})> Function(
+  String name,
+  String path,
+);
 
 class CloudLibraryPage extends StatelessWidget {
   const CloudLibraryPage({
@@ -260,9 +264,8 @@ class _CloudConnectionPageState extends State<CloudConnectionPage> {
           ),
           padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: .045),
+            color: Theme.of(context).colorScheme.onSurface
+                .withValues(alpha: .045),
             borderRadius: BorderRadius.circular(ArchiveDesign.panelRadius),
           ),
         ),
@@ -455,11 +458,12 @@ class _CloudBookBrowserState extends State<CloudBookBrowser> {
     var failed = 0;
     Directory? work;
     try {
-      work = await Directory(
+      final parent = await Directory(
         '${(await getTemporaryDirectory()).path}/cloud-book-import',
       ).create(recursive: true);
-      final batch = await work.createTemp('batch-');
-      work = batch;
+      // Keep only the directory this operation owns. Parsing a basename with
+      // '/' misses Windows separators and leaves completed batches behind.
+      work = await parent.createTemp('batch-');
       for (final entry in entries) {
         if (!mounted || _cancelled) break;
         setState(() {
@@ -523,9 +527,7 @@ class _CloudBookBrowserState extends State<CloudBookBrowser> {
         );
       }
     } finally {
-      if (work != null &&
-          work.path.split('/').last.startsWith('batch-') &&
-          await work.exists()) {
+      if (work != null && await work.exists()) {
         await work.delete(recursive: true);
       }
       if (_cancelled) {
@@ -704,9 +706,9 @@ class _CloudBookBrowserState extends State<CloudBookBrowser> {
                                         style: TextStyle(
                                           fontSize: 12,
                                           height: 1.6,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurfaceVariant,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
                                         ),
                                       ),
                                   ],

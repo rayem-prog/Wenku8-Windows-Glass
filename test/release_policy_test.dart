@@ -100,7 +100,9 @@ void main() {
     expect(publicReleaseNotes, isNot(contains('MewX')));
     expect(publicReleaseNotes, isNot(contains('API')));
     expect(publicReleaseNotes, contains('免费开源，请勿付费'));
-    final changelog = File('CHANGELOG.md').readAsStringSync();
+    final changelog = File('CHANGELOG.md')
+        .readAsStringSync()
+        .replaceAll('\r\n', '\n');
     expect(changelog, isNot(contains('1131397088')));
     final readme = File('README.md').readAsStringSync();
     expect(readme, isNot(contains('1131397088')));

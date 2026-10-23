@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+
 import 'edge_tts.dart';
 import 'models.dart';
 import 'custom_tts.dart';
@@ -286,24 +288,26 @@ class SpeechAudioCache implements SpeechAudioSource {
 
   @override
   void protect(File file) {
-    _protected.add(file.path);
+    _protected.add(_fileKey(file));
   }
 
   @override
   void unprotect(File file) {
-    _protected.remove(file.path);
+    _protected.remove(_fileKey(file));
   }
+
+  String _fileKey(File file) => file.absolute.uri.normalizePath().toString();
 
   @override
   Future<void> invalidate(File file) async {
-    if (file.absolute.parent.path != directory.absolute.path ||
-        !RegExp(
-          r'^[a-f0-9]{64}\.(mp3|wav)$',
-        ).hasMatch(file.uri.pathSegments.last)) {
+    if (file.absolute.parent.uri.normalizePath() !=
+            directory.absolute.uri.normalizePath() ||
+        !RegExp(r'^[a-f0-9]{64}\.(mp3|wav)$')
+            .hasMatch(file.uri.pathSegments.last)) {
       return;
     }
     try {
-      if (await file.exists() && !_protected.contains(file.path)) {
+      if (await file.exists() && !_protected.contains(_fileKey(file))) {
         await file.delete();
       }
     } on FileSystemException {
@@ -347,7 +351,7 @@ class SpeechAudioCache implements SpeechAudioSource {
     var bytes = entries.fold<int>(0, (sum, e) => sum + e.stat.size);
     for (final entry in entries) {
       if (bytes <= maximumBytes) break;
-      if (_protected.contains(entry.file.path)) continue;
+      if (_protected.contains(_fileKey(entry.file))) continue;
       try {
         await entry.file.delete();
         bytes -= entry.stat.size;
