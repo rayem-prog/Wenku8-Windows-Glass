@@ -84,3 +84,6 @@ try {
     Set-Location $previous
     Remove-Item -LiteralPath $temporary -Recurse -Force
 }
+# GitHub's pwsh wrapper propagates LASTEXITCODE. The final git-diff failure
+# above is intentional; successful assertions must return a successful process.
+exit 0
