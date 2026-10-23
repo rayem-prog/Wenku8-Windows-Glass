@@ -1,0 +1,40 @@
+name: Windows release candidate
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.0'
+          channel: stable
+          cache: true
+      - name: Check source inventory and private data
+        run: python tools/check_public_source.py --public-web --revision $env:GITHUB_SHA
+      - name: Tooling tests
+        run: python -m unittest discover -s tools -p 'test_*.py'
+      - name: Build/package behavior checks
+        run: ./tools/Test-WindowsScripts.ps1
+      - name: Analyze, regress and build release
+        run: ./Build-Windows.ps1
+      - name: Package complete runtime and corresponding source
+        run: ./tools/Package-Windows.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Wenku8-Windows-0.5.0-release-candidate
+          path: dist/*.zip
+          if-no-files-found: error
+          retention-days: 14
