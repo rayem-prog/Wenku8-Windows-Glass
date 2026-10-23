@@ -12,7 +12,7 @@ function Assert-Rejected([scriptblock]$Action, [string]$Reason) {
     }
     Assert-True $caught "Expected rejection: $Reason"
 }
-foreach ($file in @('Build-Windows.ps1', 'tools/Package-Windows.ps1', 'tools/Validate-Windows.ps1')) {
+foreach ($file in @('Build-Windows.ps1', 'tools/Package-Windows.ps1', 'tools/Validate-Windows.ps1', 'tools/Find-VcRuntime.ps1')) {
     $tokens = $null; $errors = $null
     [void][System.Management.Automation.Language.Parser]::ParseFile((Join-Path $root $file), [ref]$tokens, [ref]$errors)
     Assert-True ($errors.Count -eq 0) "PowerShell parse errors: $file"
@@ -22,6 +22,22 @@ New-Item -ItemType Directory -Path $temporary | Out-Null
 $previous = Get-Location
 $testsPassed = $false
 try {
+    $visualStudio = Join-Path $temporary 'visual-studio'
+    $runtimeFinder = Join-Path $root 'tools/Find-VcRuntime.ps1'
+    foreach ($version in @('14.44.35208', '14.40.33810', 'v143')) {
+        $directory = Join-Path $visualStudio "VC/Redist/MSVC/$version/x64/Microsoft.VC143.CRT"
+        New-Item -ItemType Directory -Path $directory -Force | Out-Null
+        foreach ($dll in @('msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll')) {
+            Set-Content -LiteralPath (Join-Path $directory $dll) -Value "runtime path fixture: $dll" -Encoding UTF8
+        }
+    }
+    $found = & $runtimeFinder -VisualStudioDirectory $visualStudio
+    Assert-True ($found -eq (Join-Path $visualStudio 'VC/Redist/MSVC/14.44.35208/x64/Microsoft.VC143.CRT')) 'Runtime discovery did not choose the newest complete numeric version'
+    Remove-Item -LiteralPath (Join-Path $visualStudio 'VC/Redist/MSVC/14.44.35208'), (Join-Path $visualStudio 'VC/Redist/MSVC/14.40.33810') -Recurse -Force
+    $found = & $runtimeFinder -VisualStudioDirectory $visualStudio
+    Assert-True ($found -eq (Join-Path $visualStudio 'VC/Redist/MSVC/v143/x64/Microsoft.VC143.CRT')) 'Runtime discovery did not support the v143-only layout'
+    Remove-Item -LiteralPath (Join-Path $found 'vcruntime140_1.dll')
+    Assert-Rejected { & $runtimeFinder -VisualStudioDirectory $visualStudio } 'Could not find complete x64'
     $fakeFlutter = Join-Path $temporary 'old-flutter.ps1'
     @'
 $marker = Join-Path $PSScriptRoot 'bootstrapped'
@@ -37,6 +53,7 @@ exit 0
     $project = Join-Path $temporary 'project'
     New-Item -ItemType Directory -Path "$project/tools", "$project/assets/licenses" -Force | Out-Null
     Copy-Item -LiteralPath (Join-Path $root 'tools/Package-Windows.ps1') -Destination "$project/tools/Package-Windows.ps1"
+    Copy-Item -LiteralPath $runtimeFinder -Destination "$project/tools/Find-VcRuntime.ps1"
     foreach ($file in @('LICENSE','COPYING','NOTICE','WINDOWS.md','WINDOWS-ACCEPTANCE.md','WINDOWS-VALIDATION.md')) {
         Copy-Item -LiteralPath (Join-Path $root $file) -Destination (Join-Path $project $file)
     }

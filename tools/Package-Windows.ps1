@@ -23,9 +23,7 @@ try {
         $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
         $vs = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
         if ($LASTEXITCODE -ne 0 -or -not $vs) { throw 'Could not find MSVC redistributable DLLs. Pass -VcRuntimeDirectory with the licensed x64 Microsoft.VC*.CRT directory.' }
-        $redist = Get-ChildItem -LiteralPath (Join-Path $vs 'VC/Redist/MSVC') -Directory | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
-        $crt = Get-ChildItem -LiteralPath (Join-Path $redist.FullName 'x64') -Directory -Filter 'Microsoft.VC*.CRT' | Select-Object -First 1
-        $VcRuntimeDirectory = $crt.FullName
+        $VcRuntimeDirectory = & (Join-Path $PSScriptRoot 'Find-VcRuntime.ps1') -VisualStudioDirectory $vs.Trim()
     }
     foreach ($dll in @('msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll')) {
         if (-not (Test-Path -LiteralPath (Join-Path $VcRuntimeDirectory $dll))) { throw "Missing x64 VC runtime: $dll" }

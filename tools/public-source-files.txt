@@ -736,6 +736,7 @@ third_party/liquid_glass_easy/lib/src/widgets/utils/liquid_glass_spring.dart
 third_party/liquid_glass_easy/lib/src/widgets/utils/liquid_glass_touch.dart
 third_party/liquid_glass_easy/lib/src/widgets/utils/liquid_glass_warm_up.dart
 third_party/liquid_glass_easy/pubspec.yaml
+tools/Find-VcRuntime.ps1
 tools/Package-Windows.ps1
 tools/Test-WindowsScripts.ps1
 tools/Validate-Windows.ps1

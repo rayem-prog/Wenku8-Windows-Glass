@@ -147,3 +147,4 @@ key.properties
 /dist/
 
 !/tools/Test-WindowsScripts.ps1
+!/tools/Find-VcRuntime.ps1
